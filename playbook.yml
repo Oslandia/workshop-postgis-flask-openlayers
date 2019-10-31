@@ -1,0 +1,11 @@
+---
+- hosts: all
+  become: yes
+  become_user: root
+  roles:
+  - role: common
+    tags: common
+  - role: postgresql
+    tags: postgresql
+  - role: workshop
+    tags: workshop

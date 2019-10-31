@@ -1,0 +1,16 @@
+---
+- name: Installing NGINX
+  apt:
+    name:
+        - nginx
+    state: present
+
+- name: ensure the default site is installed
+  become: yes
+  template:
+    src: default
+    dest: /etc/nginx/sites-available/default
+    owner: root
+    group: root
+    mode: 0644
+  notify: reload nginx

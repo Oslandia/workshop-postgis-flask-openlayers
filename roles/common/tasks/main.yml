@@ -1,0 +1,30 @@
+---
+- name: Installing system packages
+  apt:
+    name:
+    - aptitude
+    - gpg
+    - git
+    state: present
+
+- name: Adding the PostgreSQL APT signing key
+  apt_key:
+    url:  https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+
+- name: Adding PostgreSQL APT repository
+  apt_repository:
+    repo: deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main
+    state: present
+
+- name: Adding PostgreSQL APT testin repository
+  apt_repository:
+    repo: deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg-testing main
+    state: present
+
+- name: ensure the keyboard default config is french
+  become: yes
+  copy:
+    src: "keyboard"
+    dest: "/etc/default/keyboard"
+  

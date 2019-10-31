@@ -1,0 +1,14 @@
+---
+- name: Installing PostgreSQL
+  apt:
+    name: "{{ packages }}"
+    state: present
+  vars:
+    packages:
+    - postgresql-11
+    - postgresql-client-11
+    - postgresql-11-postgis-3
+    - postgresql-server-dev-11
+    - postgis
+
+

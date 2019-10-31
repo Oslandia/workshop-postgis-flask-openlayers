@@ -1,0 +1,92 @@
+---
+- name: ensure required system packages fro the worksop are present
+  apt:
+    name:
+    - xfce4
+    - xdm
+    - gedit
+    - vim
+    - virtualenv
+    - firefox-esr
+    - python-psycopg2
+    - acl
+    - gdal-bin
+    - gcc 
+    - python3-dev
+    - npm
+    - qgis
+
+- name: ensure the src directory exists
+  become: yes
+  become_user: vagrant
+  copy:
+    src: "workshop"
+    dest: "/home/vagrant"
+
+- name: ensure database workshop exists
+  become: yes
+  become_user: postgres
+  postgresql_db:
+    name: workshop
+
+- name: ensure database workshop exists
+  become: yes
+  become_user: postgres
+  postgresql_ext:
+    name: postgis
+    db: workshop
+
+- name: ensure user vagrant can access database workshop
+  become: yes
+  become_user: postgres
+  postgresql_user:
+    db: workshop
+    name: vagrant
+    password: vagrant
+    priv: "ALL"
+
+- name: ensure the postgres service file exists for user vagrant
+  become: yes
+  become_user: vagrant
+  copy:
+    src: "pg_service.conf"
+    dest: "/home/vagrant/.pg_service.conf"
+
+- name: ensure we know if glass data are in the database
+  become: yes
+  become_user: postgres
+  register: glass_query
+  postgresql_query:
+    db: workshop
+    query: SELECT 1 FROM geometry_columns WHERE f_table_name='verre'
+
+- name: ensure we know if building data are in the database
+  become: yes
+  become_user: postgres
+  register: building_query
+  postgresql_query:
+    db: workshop
+    query: SELECT 1 FROM geometry_columns WHERE f_table_name='bati'
+
+- name: ensure lyon glass container data is in database
+  become: yes
+  become_user: vagrant
+  shell: ogr2ogr -f "PostgreSQL" PG:"dbname=workshop" -nln verre WFS:https://download.data.grandlyon.com/wfs/grandlyon gic_collecte.gicsiloverre
+  when: glass_query.rowcount == 0
+
+- name: ensure lyon building data is in database
+  become: yes
+  become_user: vagrant
+  shell: ogr2ogr -f "PostgreSQL" PG:"dbname=workshop" -nln bati WFS:https://download.data.grandlyon.com/wfs/grandlyon cad_cadastre.cadbatiment 
+  when: building_query.rowcount == 0
+
+- name: ensure ol node.js package.
+  become: yes
+  become_user: vagrant
+  npm:
+    name: "{{ item }}"
+    path: "/home/vagrant/workshop"
+  with_items:
+    - ol
+    - parcel
+
