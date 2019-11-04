@@ -2,7 +2,7 @@
 
 Quand on consulte une page web, notre **client** Firefox, Chrome, Safary ou Internet Explorer, dialogue avec un **serveur**.
 
-Le but de cet atelier est de créer un serveur pour exposer nos donnée PostGIS dans une page web.
+Le but de cet atelier est de créer un serveur pour exposer nos données PostGIS dans une page web.
 
 
 ## Démarrer
@@ -30,18 +30,20 @@ Ouvrons maintenant une console `Application -> Terminal Emulator` et exectutons 
 python3 hello.py
 ```
 
-| Astuce: vous pouvez passer de l'editeur à la console en cliquant sur la barre de tâches qui se trouve en haute de l'écran ou avec `Alt+tab`|
+| Astuce: vous pouvez passer de l'éditeur à la console en cliquant sur la barre de tâches qui se trouve en haut de l'écran ou avec `Alt+tab`|
 | --- |
 
 ### virtualenv
 
 virtualenv est un outil pour créer des environnements virtuels Python isolés. virtualenv crée un dossier qui contient tous les exécutables nécessaires pour utiliser les paquets qu’un projet Python pourrait nécessiter.
 
-L'objectif est d'avoir un environnemet contrôlé, en particulier:
+L'objectif est d'avoir un environnement contrôlé, en particulier:
+
 - ne pas dépendre implicitement de modules installés sur la machine de développement
+
 - garder le controle sur les version des modules installés
 
-Commençons donc par créer un environnement virtuel puis activons le:
+Commençons donc par créer un environnement virtuel puis activons-le:
 
 | Attention: la deuxième ligne ne contient pas de typo, on utilise bien l'opérateur . du bash pour sourcer le script activate qui modifie l'environnement |
 | --- |
@@ -100,7 +102,7 @@ Pour nous connecter à la base PostGIS nous utilisons le module `psycopg2`:
 python3 -m pip install psycopg2
 ```
 
-Posgis3 permet de transformer très simplement le contenu d'une table en geojson:
+Postis3 permet de transformer très simplement le contenu d'une table en geojson:
 
 ```sql
 select json_build_object(
@@ -268,7 +270,7 @@ Notons l'utilisation de la fonction `transform` fournie par OpenLayers:
 import {transform} from 'ol/proj';
 ```
 
-### Un peu de performance: les tuiles verctorielles
+### Un peu de performance: les tuiles vectorielles
 
 Nous disposons d'une couche de bâti, nous pouvons l'exposer de la même manière que la couche de conteneur à verre. Cependant la couche est plutôt lourde (70Mo en geojson) et pour ne pas gaspiller notre précieuse bande passante, une autre approche est préférable: utiliser des tuiles vectorielles en nous basant sur ce [très bon tutoriel](https://info.crunchydata.com/blog/dynamic-vector-tiles-from-postgis).
 
@@ -295,16 +297,16 @@ Pour définir un nouvelle couche dans la liste `layers`:
             })
 ```
 
-Après avoir crée le bundle, lorsque nous rafraîchissons notre page web carto, nous pouvons observer dans la console qui exécute le serveur des lignes:
+Après avoir créé le bundle, lorsque nous rafraîchissons notre page web carto, nous pouvons observer dans la console qui exécute le serveur des lignes:
 
 ```
 10.0.2.2 - - [31/Oct/2019 12:22:20] "GET /bati/13/4205/2922 HTTP/1.1" 404 -
 10.0.2.2 - - [31/Oct/2019 12:22:20] "GET /bati/13/4206/2922 HTTP/1.1" 404 -
 ```
 
-Le serveur reçois des requêtes pour deux tuiles au niveau de zoom 13 (le `{z}` dans l'url de la couche vectorielle) avec les coordonnées (`{x}/{y}`) de tuile `4205/2922` et `4206/2922`.
+Le serveur reçoit des requêtes pour deux tuiles au niveau de zoom 13 (le `{z}` dans l'url de la couche vectorielle) avec les coordonnées (`{x}/{y}`) de tuile `4205/2922` et `4206/2922`.
 
-Le serveur renvoie une erreur 404, puisque nous n'avons pas encore codé la partie serveur. Mais avant de le faire, intéressons nous à ces coordonnées de tuile.
+Le serveur renvoie une erreur 404, puisque nous n'avons pas encore codé la partie serveur. Mais avant de le faire, intéressons nous à ces coordonnées de tuiles.
 
 Le niveau de zoom `z` défini le nombre de tuiles `2^z` sur un côté d'une emprise cartographique incluant toute la surface de la terre. La numérotation des tuiles se fait en partant du coin supérieur gauche, par exemple pour `z=2` on a `2^z=4` tuiles par côté:
 
@@ -342,12 +344,12 @@ mvtgeom AS (
 select ST_AsMVT(mvtgeom.*) from mvtgeom
 ```
 
-Notons l'utilisation de `ST_Segmetize` pour décomposer les contours de l'emprise en segments de 100m afin que la re-projection soit suffisamment précise (déformation non linéaire du carré).
+Notons l'utilisation de `ST_Segmentize` pour décomposer les contours de l'emprise en segments de 100m afin que la re-projection soit suffisamment précise (déformation non linéaire du carré).
 
-| Attention : les parethèses autour de `(40075016/2^{z})` sont nécessaires pou éviter de multiplier d'abord les coordonnées de tuile par 40075016, ce qui donne un nombre trop grand |
+| Attention : les parenthèses autour de `(40075016/2^{z})` sont nécessaires pour éviter de multiplier d'abord les coordonnées de tuile par 40075016, ce qui donne un nombre trop grand |
 | --- |
 
-Avec cette requête, nous pouvons implémenter notre serveur de tuiles vectorielles pour la couche bati:
+Avec cette requête, nous pouvons implémenter notre serveur de tuiles vectorielles pour la couche bâti:
 
 ```python
 @app.route('/bati/<z>/<x>/<y>')
