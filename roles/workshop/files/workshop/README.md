@@ -379,6 +379,96 @@ def bati(z, x, y):
 
 
 
+### Un peu de professionalisme: déployer le service avec nginx, uwsgi et systemd
+
+WSGI standard d'interface entre serveur web (ici nginx) et appli python (ici la notre).
+
+uwsgi: serveur qui implémente le standard en tant que serveur wsgi (et bien d'autre choses)
+
+
+- seveur http (serveur web): nginx
+- serveur wsgi : uwsgi
+- appli wsgi : notre "module" qui défini une application Flask
+- serveur BDDR : postgres (qui fait tout le travail, le reste c'est des passe plat)
+
+Installer module uwsgi pour nginx
+
+```
+uwsgi:
+    plugins: python3
+    virtualenv: /home/vagrant/workshop/venv
+    master: true
+    uid: www-data
+    gid: www-data
+    socket: /tmp/workshop.sock
+    chmod-socket: 666
+    mount: /workshop=server.app:app
+    manage-script-name: true
+    processes: 1
+    enable-threads: true
+    protocol: uwsgi
+    need-app: true
+    catch-exceptions: true
+    py-auto-reload: 0
+```
+
+
+
+`/etc/systemd/system/workshop.service`
+
+```
+[Unit]
+Description=Workshop Service 
+
+[Service]
+User=www-data
+Group=www-data
+RuntimeDirectory=uwsgi
+Restart=always
+ExecReload=/bin/kill -HUP $MAINPID
+Type=notify
+NotifyAccess=all
+ExecStart=/home/vagrant/workshop/venv/bin/uwsgi --yaml /home/vagrant/workshop/uwsgi.yml
+
+[Install]
+WantedBy=multi-user.target
+```
+
+conf nginx 
+
+```
+        location /workshop {
+                include uwsgi_params;
+                uwsgi_pass unix://tmp/workshop.sock;
+                proxy_redirect     off;
+                proxy_set_header   Host             $http_host;
+                proxy_set_header   X-Real-IP        $remote_addr;
+                proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
+        }
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

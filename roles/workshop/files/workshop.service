@@ -1,0 +1,16 @@
+[Unit]
+Description=Workshop Service 
+
+[Service]
+User=www-data
+Group=www-data
+RuntimeDirectory=uwsgi
+Restart=always
+ExecReload=/bin/kill -HUP $MAINPID
+Type=notify
+NotifyAccess=all
+ExecStart=uwsgi --yaml /home/vagrant/workshop/uwsgi.yml
+
+[Install]
+WantedBy=multi-user.target
+

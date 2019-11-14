@@ -15,6 +15,9 @@
     - python3-dev
     - npm
     - qgis
+    - nginx
+    - uwsgi
+    - uwsgi-plugin-python3
 
 - name: ensure the src directory exists
   become: yes
@@ -89,4 +92,36 @@
   with_items:
     - ol
     - parcel
+
+- name: ensure our workshop uwsgi service is installed
+  become: yes
+  copy:
+    src: workshop.service
+    dest: /etc/systemd/system/workshop.service
+    owner: root
+    group: root
+    mode: 0644
+    #  notify: reload workshop
+
+- name: ensure the nginx default site is installed
+  become: yes
+  copy:
+    src: nginx_default
+    dest: /etc/nginx/sites-available/default
+    owner: root
+    group: root
+    mode: 0644
+    #  notify: reload nginx
+
+- name: reload workshop service
+  become: yes
+  systemd:
+    name: workshop
+    state: reloaded
+
+- name: reload nginx
+  become: yes
+  systemd:
+    name: nginx
+    state: reloaded
 
