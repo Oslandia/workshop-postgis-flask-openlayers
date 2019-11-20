@@ -381,25 +381,29 @@ def bati(z, x, y):
 
 ### Un peu de professionalisme: déployer le service avec nginx, uwsgi et systemd
 
-WSGI standard d'interface entre serveur web (ici nginx) et appli python (ici la notre).
+Comme nous l'avons mentionné en encadré, lancer le serveur web (http) fourni par flask est utile pour développer, mais ce n'est pas adapté à un déploiement en production.
 
-uwsgi: serveur qui implémente le standard en tant que serveur wsgi (et bien d'autre choses)
+Dans un environnement de production on a typiquement un serveur web (apache ou nginx) qui récupère les requêtes des clients et les transfères à un service qui n'est pas directement visible depuis l'extérieur (le web sauvage).
 
+WSGI est un standard d'interface entre serveur web (ici nginx) et appli python (ici la notre). uwsgi est un serveur qui implémente le standard wsgi (et bien d'autre choses) et transforme une application python en service. 
+
+
+Résumons, nous utilisons un serveur ngxinx et le module uwsgi pour nginx, côté serveur nous passons au travers de toutes ces couches, dans l'ordre, pour exposer nos données:
 
 - seveur http (serveur web): nginx
 - serveur wsgi : uwsgi
 - appli wsgi : notre "module" qui défini une application Flask
-- serveur BDDR : postgres (qui fait tout le travail, le reste c'est des passe plat)
+- serveur BDDR : postgres (qui fait tout le travail, le reste c'est des passe plat élaborés)
 
-Installer module uwsgi pour nginx
+Començons par configurer le serveur uwsgi pour qu'il lance notre application python:
 
 ```
 uwsgi:
     plugins: python3
     virtualenv: /home/vagrant/workshop/venv
     master: true
-    uid: www-data
-    gid: www-data
+    uid: vagrant
+    gid: vagrant
     socket: /tmp/workshop.sock
     chmod-socket: 666
     mount: /workshop=server.app:app
@@ -412,9 +416,19 @@ uwsgi:
     py-auto-reload: 0
 ```
 
+Nous pouvons tester le serveur en le lançant directement:
 
+```sh
+uwsgi --yaml /home/vagrant/workshop/uwsgi.yml
+```
 
-`/etc/systemd/system/workshop.service`
+Pour que le serveur uwsgi pour notre application soit lancée automatiquement par le système, nous définissons un service. Pour celà il suffit de créer un fichier en tant qu'administrateur `/etc/systemd/system/workshop.service`
+
+```sh
+sudo gedit /etc/systemd/system/workshop.service
+```
+
+qui contient les définitions suivantes:
 
 ```
 [Unit]
@@ -428,13 +442,25 @@ Restart=always
 ExecReload=/bin/kill -HUP $MAINPID
 Type=notify
 NotifyAccess=all
-ExecStart=/home/vagrant/workshop/venv/bin/uwsgi --yaml /home/vagrant/workshop/uwsgi.yml
+ExecStart=uwsgi --yaml /home/vagrant/workshop/uwsgi.yml
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-conf nginx 
+Une fois le fichier créé, onus pouvons lancer le service:
+
+```sh
+sudo systemctl start workshop.service
+```
+
+Il ne reste plus qu'à configurer le serveur web pour qu'il utilise le service en éditant, toujours en tant qu'administrateur, le fichier de configuration `/etc/nginx/sites-enabled/default`.
+
+```
+sudo gedit /etc/nginx/sites-enabled/default
+```
+
+pour qu'il inclue le service:
 
 ```
         location /workshop {
