@@ -1,4 +1,4 @@
-![](workshop.jpg =500x)
+<img src="workshop.jpg" alt="drawing" width="300"/>
 
 ## Introduction
 
