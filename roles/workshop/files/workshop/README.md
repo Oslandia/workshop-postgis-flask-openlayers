@@ -474,6 +474,11 @@ pour qu'il inclue le service:
 
 ```
 
+Finalement il nous faut redémarrer le serveur web pour prendre en compte les modifications de configuration:
+
+```sh
+sudo systemctl reload nginx
+```
 
 
 
