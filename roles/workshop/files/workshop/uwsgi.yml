@@ -2,8 +2,8 @@ uwsgi:
     plugins: python3
     virtualenv: /home/vagrant/workshop/venv
     master: true
-    uid: www-data
-    gid: www-data
+    uid: vagrant
+    gid: vagrant
     socket: /tmp/workshop.sock
     chmod-socket: 666
     pythonpath: /home/vagrant/workshop

@@ -1,5 +1,5 @@
 ---
-- name: ensure required system packages fro the worksop are present
+- name: ensure required system packages fro the workshop are present
   apt:
     name:
     - xfce4
@@ -8,7 +8,6 @@
     - vim
     - virtualenv
     - firefox-esr
-    - python-psycopg2
     - acl
     - gdal-bin
     - gcc 
@@ -25,6 +24,20 @@
   copy:
     src: "workshop"
     dest: "/home/vagrant"
+
+    #- name: create the initial virtualenv
+    #  command: virtualenv /home/vagrant/workshop/venv -p python3 
+    #  args:
+    #    creates: /home/vagrant/workshop/venv
+
+- name: install requirements invirtualenv
+  become: yes
+  become_user: vagrant
+  pip: 
+    requirements: /home/vagrant/workshop/requirements.txt
+    virtualenv: /home/vagrant/workshop/venv
+    virtualenv_python: python3
+
 
 - name: ensure database workshop exists
   become: yes
@@ -113,15 +126,17 @@
     mode: 0644
     #  notify: reload nginx
 
-- name: reload workshop service
+- name: enable and start workshop service
   become: yes
   systemd:
     name: workshop
-    state: reloaded
+    state: started
+    enabled: true
 
-- name: reload nginx
+- name: enable and start nginx
   become: yes
   systemd:
     name: nginx
-    state: reloaded
+    state: started
+    enabled: true
 

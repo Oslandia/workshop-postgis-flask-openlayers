@@ -421,8 +421,8 @@ uwsgi:
 Description=Workshop Service 
 
 [Service]
-User=www-data
-Group=www-data
+User=vagrant
+Group=vagrant
 RuntimeDirectory=uwsgi
 Restart=always
 ExecReload=/bin/kill -HUP $MAINPID
