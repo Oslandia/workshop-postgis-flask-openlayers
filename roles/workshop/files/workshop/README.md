@@ -1,3 +1,5 @@
+![](workshop.jpg)
+
 ## Introduction
 
 Quand on consulte une page web, notre **client** Firefox, Chrome, Safary ou Internet Explorer, dialogue avec un **serveur**.
