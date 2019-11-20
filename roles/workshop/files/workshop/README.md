@@ -7,7 +7,7 @@ Le but de cet atelier est de créer un serveur pour exposer nos donnée PostGIS 
 
 ## Démarrer
 
-Démarrons la machine virtuelle du workshop, le nom d'utilisateur est `vagrant` et le mot de passe `vagrant`.
+Démarrons la [machine virtuelle du workshop](http://37.187.164.233/workshop_postgis_flask_openlayers.ova), le nom d'utilisateur est `vagrant` et le mot de passe `vagrant`.
 
 
 ## Développer proprement en python
