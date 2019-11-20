@@ -1,4 +1,4 @@
-![](workshop.jpg)
+![](workshop.jpg =500x)
 
 ## Introduction
 
